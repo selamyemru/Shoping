@@ -1,12 +1,12 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import StarRating from '../Component/Product/StarRating'; // Import the StarRating component
-
+import StarRating from '../Component/Product/StarRating'; 
+import { useAuth } from '../context/AuthContext';
 const ProductListPage = () => {
+  const { user } = useAuth();
   const [products, setProducts] = useState([]);
   const [expandedProductId, setExpandedProductId] = useState(null);
-
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -28,7 +28,6 @@ const ProductListPage = () => {
       await axios.put(`http://localhost:4000/api/products/${productId}`, {
         rating: newRating
       });
-      // Update the local state to reflect the new rating
       setProducts(products.map(product =>
         product._id === productId ? { ...product, rating: newRating } : product
       ));
@@ -37,6 +36,20 @@ const ProductListPage = () => {
     }
   };
 
+  const handleAddToCart = async (productId) => {
+    if (user) {
+      try {
+        await axios.post(`http://localhost:4000/addToCart/${user.id}/add`, {
+          productId
+        });
+        alert('Product added to cart!');
+      } catch (error) {
+        console.error('Error adding product to cart:', error);
+      }
+    } else {
+      alert('You must be logged in to add items to the cart.');
+    }
+  };
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <header className="py-4">
@@ -76,6 +89,12 @@ const ProductListPage = () => {
                   onRatingChange={(newRating) => handleRatingChange(product._id, newRating)}
                 />
                 <p className="text-xl font-bold mt-4">${product.price.toFixed(2)}</p>
+                <button
+                  onClick={() => handleAddToCart(product._id)}
+                  className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
+                >
+                  Add to Cart
+                </button>
               </div>
             </div>
           ))}

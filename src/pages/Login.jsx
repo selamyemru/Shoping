@@ -22,7 +22,7 @@ const LoginPage = () => {
     try {
       const response = await axios.post('http://localhost:4000/api/login', formData);
       localStorage.setItem('token', response.data.token);
-      navigate('/admin')
+      navigate('/')
       toast.success('Login successful');
     } catch (error) {
       console.error(error);

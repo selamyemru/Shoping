@@ -1,24 +1,62 @@
+
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext'; 
 
 const CartPage = () => {
+  const { user } = useAuth(); 
   const [cart, setCart] = useState([]);
 
   useEffect(() => {
-    const fetchCart = async () => {
-      try {
-        const response = await axios.get('http://localhost:4000/api/cart');
-        setCart(response.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    fetchCart();
-  }, []);
+    if (user && user.id) { 
+      const fetchCart = async () => {
+        try {
+          const response = await axios.get(`http://localhost:4000/getCartByUserId/${user.id}`);
+          setCart(response.data);
+        } catch (error) {
+          console.error('Error fetching cart:', error);
+        }
+      };
+      fetchCart();
+    }
+  }, [user]);
+
+  const updateCartItem = async (productId, newQuantity) => {
+    try {
+      await axios.put(`http://localhost:4000/updateCartItem/${user.id}/update`, {
+        productId,
+        quantity: newQuantity,
+      });
+      // Update local cart state
+      setCart(cart.map(item =>
+        item.product._id === productId
+          ? { ...item, quantity: newQuantity }
+          : item
+      ));
+    } catch (error) {
+      console.error('Error updating cart item:', error);
+    }
+  };
+
+  const removeFromCart = async (productId) => {
+    try {
+      await axios.delete(`http://localhost:4000/removeFromCart/${user.id}/remove`, {
+        data: { productId },
+      });
+      // Update local cart state
+      setCart(cart.filter(item => item.product._id !== productId));
+    } catch (error) {
+      console.error('Error removing from cart:', error);
+    }
+  };
 
   const calculateTotal = () => {
     return cart.reduce((total, item) => total + item.product.price * item.quantity, 0).toFixed(2);
   };
+
+  if (!user) {
+    return <p className='flex justify-center'>Please log in to view your cart.</p>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 py-8">
@@ -44,10 +82,23 @@ const CartPage = () => {
                     />
                     <div>
                       <h2 className="text-xl font-semibold">{item.product.name}</h2>
-                      <p className="text-gray-600">Quantity: {item.quantity}</p>
+                      <p className="text-gray-600">Quantity: 
+                        <input 
+                          type="number" 
+                          value={item.quantity} 
+                          onChange={(e) => updateCartItem(item.product._id, Number(e.target.value))} 
+                          className="ml-2 w-16 text-center border border-gray-300 rounded"
+                        />
+                      </p>
                     </div>
                   </div>
                   <p className="text-xl font-semibold">${(item.product.price * item.quantity).toFixed(2)}</p>
+                  <button 
+                    onClick={() => removeFromCart(item.product._id)}
+                    className="text-red-600 hover:text-red-800"
+                  >
+                    Remove
+                  </button>
                 </div>
               ))}
               <div className="mt-6 flex justify-between font-bold">
@@ -65,3 +116,4 @@ const CartPage = () => {
 };
 
 export default CartPage;
+
