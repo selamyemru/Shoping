@@ -21,7 +21,7 @@ import {
   addToCart,
   updateCartItem,
   removeFromCart
-} from '../controllers/cart.js';
+} from '../controllers/Cart.js';
 import {
   createProduct,
   getAllProducts,
@@ -59,14 +59,15 @@ import {
   removeFromWishlist
 } from '../controllers/wishlist.js';
 
-import { getAdminDashboard, manageProduct, manageOrder, manageUser } from '../controllers/adminController.js';
-
+import { getAdminDashboard, manageProduct, manageOrder, manageUser } from '../controllers/admin.js';
+import authenticateToken from '../middleware/Authentication.js';
 
 // Admin dashboard
+//protected route
 router.get('/dashboard', getAdminDashboard);
 
 // Manage products
-router.post('/products', manageProduct);
+router.post('/products',manageProduct);
 router.put('/products/:id', manageProduct);
 router.delete('/products/:id', manageProduct);
 
@@ -77,7 +78,6 @@ router.put('/orders/:id', manageOrder);
 // Manage users
 router.get('/users', manageUser);
 router.put('/users/:id', manageUser);
-
 
 //category
 router.post('/createCategory', createCategory);
@@ -94,7 +94,7 @@ router.get('/getUserOrders/getOrderById/:id', getOrderById);
 router.put('/updateOrderStatus/:id/status', updateOrderStatus);
 //user
 router.get('/getCartByUserId/:userId', getCartByUserId);
-router.post('/addToCart/:userId/add', addToCart);
+router.post('/addToCart/:userId', addToCart);
 router.put('/updateCartItem/:userId/update', updateCartItem);
 router.delete('/removeFromCart/:userId/remove', removeFromCart);
 //product

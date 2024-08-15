@@ -1,21 +1,23 @@
 import Cart from '../models/Cart.js';
 
-// Get cart by user ID
 export const getCartByUserId = async (req, res) => {
   try {
-    const cart = await Cart.findOne({ userId: req.params.userId });
-    res.json(cart);
+    const cart = await Cart.findOne({ userId: req.params.userId }).populate('items.productId'); // Ensure you populate the product details if needed
+    res.json(cart || { items: [] }); // Provide a default structure if no cart is found
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// Add to cart
+
+
 export const addToCart = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { productId, quantity } = req.body;
+    const { productId, quantity = 1 } = req.body;
+
     let cart = await Cart.findOne({ userId });
+
     if (!cart) {
       cart = new Cart({ userId, items: [{ productId, quantity }] });
     } else {
@@ -26,9 +28,11 @@ export const addToCart = async (req, res) => {
         cart.items.push({ productId, quantity });
       }
     }
+
     await cart.save();
     res.json(cart);
   } catch (error) {
+    console.error('Error in addToCart:', error.message);
     res.status(500).json({ error: error.message });
   }
 };

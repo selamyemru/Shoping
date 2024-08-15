@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import Cart from '../models/Cart.js';
+
 
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
@@ -8,6 +10,9 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   address: { type: String },
   paymentMethods: [{ type: String }],
+  status: { type: String, enum: ['active', 'disabled'], default: 'active' }, 
+  cart: { type: mongoose.Schema.Types.ObjectId, ref: 'Cart' },
+
 });
 
 // Hash password before saving
